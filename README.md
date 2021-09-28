@@ -50,12 +50,13 @@ will write `gemc lund type` single data file dvcs.dat with 10K events
       --targ target       proton   deut/neut possible
       --lpol                    Long.pol.target
       --tpol                    Trans.pol.target
-      --writef    format      0-lund12, 1-lundgsim
+      --writef    format      0-lund12, 1-lundgsim, 2-radiative correction
       --mod     write-mod      0-all, 1-cut on events
       --mom                include moments in ntuple
       --proloss                  add proton loss
       --ktcor          FALSE   turn on k_t cor for A_LU
       --radgen                   include radgen
+      --radstable                use born cross sections for rejection sampling
       --nodat               do not write a data file
       --acce16            include e16 acceptance for e-
       --acceg1           include eg1 acceptance for e-
@@ -68,3 +69,23 @@ will write `gemc lund type` single data file dvcs.dat with 10K events
       --nmax   value     2000  maximum events per file
       --print nprint     1000   print ev nprint event
       --bh  value      3 BH status:3-All, 1-only BH
+      --delta  value      0.01 Minimum rad photon energy (GeV)'
+      --vv2cut value      0.1 cuts on missing mass ep squared (GeV^2)'
+
+```
+
+For the writef 2 option, the file format is still lund, [https://gemc.jlab.org/gemc/html/documentation/generator/lund.html](https://gemc.jlab.org/gemc/html/documentation/generator/lund.html).
+
+But the contents are changed for the radiative corrections.
+So, --writef 2 is only useful when --radgen is on.
+
+The header's event weight is still the radiative cross section (weight of MC::Header).
+
+The lund particles have three user-defined values that are not used by the dvcsgen and the gemc.
+These are (2) lifetime, (10) energy, (11) mass, and will be saved in MC::Lund.
+
+The electron: (2) xB, (6) radiation mode (1: nonrad, 2:s-peak, 3:p-peak), (10) Q2, (11) -t.
+
+The proton: (2) phi (radians), (10) shifted xB of the virtual photon, (11) shifted Q2 of the virtual photon.
+
+The photon: (11) born cross section.
