@@ -3018,6 +3018,8 @@ ccc- Hyon-Suk
       Esc = Ed - nu
       costel = 1D0 - Q2d/(2D0*Ed*Esc)
       sintel = sqrt(1D0 - costel**2)
+      cosphe=cos(phield)
+      sinphe=sin(phield)
 c
       if(cl_radgen) then
          if (PhRAD(4).gt.0.) then
@@ -3038,8 +3040,7 @@ c
       V3k1(1) = 0D0
       V3k1(2) = 0D0
       V3k1(3) = Ed
-      cosphe=cos(phield)
-      sinphe=sin(phield)
+
       V3k2(1) = Esc*sintel*cosphe
       V3k2(2) = Esc*sintel*sinphe   !0D0
       V3k2(3) = Esc*costel
