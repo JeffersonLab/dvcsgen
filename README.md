@@ -1,8 +1,23 @@
 # dvcsgen
 dvcs/pi0/eta  generator using pdfs and gpds. 
+
+```
 git clone https://github.com/JeffersonLab/dvcsgen.git
 cd dvcsgen
 make
+```
+
+Please cite the following articles for this generator.
+```
+V. A. Korotkov and W. D. Nowak, Eur. Phys. J. C 23, 455–
+461 (2002).
+I. Akushevich and A. Ilyichev, Phys. Rev. D 98, 013005 (2018).
+```
+
+The supplementary material of the following article contains the global fitting of the EM form factors.
+```
+Z. Ye, J. R. Arrington, R. J.Hill and G. Lee , Phys. Lett. B 777 (2018) 8–15
+```
 
 To get command line options `./dvcsgen --help`
 
@@ -55,6 +70,7 @@ will write `gemc lund type` single data file dvcs.dat with 10K events
       --mom                include moments in ntuple
       --proloss                  add proton loss
       --ktcor          FALSE   turn on k_t cor for A_LU
+      --globalfit      FALSE   use the global fitting results of EM form factors
       --radgen                   include radgen
       --radstable                use born cross sections for rejection sampling
       --nodat               do not write a data file
