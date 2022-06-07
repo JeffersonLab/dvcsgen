@@ -816,7 +816,7 @@ c
               stop
              endif
 c
-             stotint=stotint+dstot*cix*cit*ciq*cife*cifg
+             if (dstot>0) stotint=stotint+dstot*cix*cit*ciq*cife*cifg*dx*dt*dq*dfe*dfg
 c
            if(smax.lt.dstot) then
             smax=dstot
@@ -838,7 +838,7 @@ c        print *,'bad-y',xmin,xmax,xbd,q2min,q2max,q2d,del2d
        ENDDO
        ENDDO
        if(cl_verblev.gt.-1) print *,'Maximum found at',SMAX,
-     6'x-sec(pb) = ',stotint*dx*dt*dq*dfe*dfg,dx*dt*dq*dfe*dfg
+     6'x-sec(pb) = ',stotint
           ENDDO
          ENDDO
         return
