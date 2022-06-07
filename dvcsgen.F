@@ -987,6 +987,12 @@ C..     Generation of an event in GENDVCS
                     PhRAD(4) = egamma
             else
                 CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
+                    bornweight = dstot
+                    radweight = dstot
+                    radq2 = Q2d
+                    radxb = xbd
+                    radt = del2d
+                    radphi = phigd
             endif
         else
         CALL excpi0(xbd, Q2d, del2d, phield,phigd,dstot)
