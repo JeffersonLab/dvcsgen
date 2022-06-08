@@ -934,13 +934,11 @@ C         endif
         w2=Mp*Mp+2.0*Mp*cl_beam_energy*yb-Q2d
                  t2lim=-0.5d0*((Q2d/xbd-Q2d)*(Q2d/xbd+sqrt((Q2d/xbd)**2+4d0*Mp*Mp*Q2d))+2d0*Mp*Mp*Q2d)/w2
                  t1lim=-0.5d0*((Q2d/xbd-Q2d)*(Q2d/xbd-sqrt((Q2d/xbd)**2+4d0*Mp*Mp*Q2d))+2d0*Mp*Mp*Q2d)/w2
-                 tmax = min(-cl_tmin, t1lim)
-                 tmin = max(-cl_tmax, t2lim)
-        if (tmax<tmin) then
-            goto 10
-        endif
 
+        tmax = -cl_tmin
+        tmin = -cl_tmax
         del2d=tmin+(tmax-tmin)*VEC(3)
+        if( del2d.ge.t1lim .or. del2d.le.t2lim ) goto 10   ! delta out of range
 ccc- Hyon-Suk
 C         if(radtheta.gt.0.15) then
 C          yb=Q2d/(2D0*Mp*xbd*cl_beam_energy)
