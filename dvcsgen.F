@@ -628,6 +628,14 @@ c
      6,cl_proloss  
         print *,'__________________________________'
         print *,'verbosity level',  cl_verblev
+	if(cl_tmax.gt.0.5.and.cl_dvcs.and.cl_gpd.lt.100) then
+	  print *,'t>0.5 not supported for --gpd <100:  ',cl_tmax
+	  call exit(-1)
+	endif 
+	if(cl_tmax.gt.1.and.cl_dvcs.and.cl_gpd.ge.100) then
+	  print *,'t>1 not supported for --gpd >100:  ',cl_tmax
+	  call exit(-1)
+	endif 
         return
         end
 
