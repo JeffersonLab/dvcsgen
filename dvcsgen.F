@@ -632,7 +632,7 @@ c
 	  print *,'t>0.5 not supported for --gpd <100:  ',cl_tmax
 	  call exit(-1)
 	endif 
-	if(cl_tmax.gt.1.and.cl_dvcs.and.cl_gpd.ge.100) then
+	if(cl_tmax.gt.1.79.and.cl_dvcs.and.cl_gpd.ge.100) then
 	  print *,'t>1 not supported for --gpd >100:  ',cl_tmax
 	  call exit(-1)
 	endif 
