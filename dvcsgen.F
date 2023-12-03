@@ -628,7 +628,7 @@ c
      6,cl_proloss  
         print *,'__________________________________'
         print *,'verbosity level',  cl_verblev
-	if(cl_tmax.gt.0.5.and.cl_dvcs.and.cl_gpd.lt.100) then
+	if(cl_tmax.gt.1.0.and.cl_dvcs.and.cl_gpd.lt.100) then
 	  print *,'t>0.5 not supported for --gpd <100:  ',cl_tmax
 	  call exit(-1)
 	endif 
@@ -813,6 +813,9 @@ c
                     ebeamff = cl_beam_energy
                     ikeygene = 4
                     CALL bhradgen(ebeamff, xff, q2ff, tff, phiff,cl_vv2cut,cl_delta,egamma,thetag,phig,ichannel,cl_pol,ikeygene,dstot)
+                    if (isnan(dstot).or.(dstot.le.0).or.(dstot.gt.huge(dstot))) then
+                     dstot = 0
+                    endif                    
                     dstot = dstot/2.0/pi
                 else
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
@@ -983,6 +986,9 @@ C..     Generation of an event in GENDVCS
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
                     CALL bhradgen(ebeamff, xff, q2ff, tff, phiff,cl_vv2cut,cl_delta,egamma,thetag,phig,ichannel,cl_pol,ikeygene,dstot)
+                    if (isnan(dstot).or.(dstot.le.0).or.(dstot.gt.huge(dstot))) then
+                     dstot = 0
+                    endif
                     dstot = dstot/2.0/pi
                     radweight = dstot
                     radq2 = Q2d
