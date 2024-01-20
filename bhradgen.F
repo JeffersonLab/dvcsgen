@@ -588,7 +588,7 @@ c      write(*,'(i4,6f8.4,i7)')ichannel,egamma,missingmass2,complanarity,complan
       Ed = s/2./mp
       call bmkxsec(x, Q2, t,  0, pi-phiphi,siborn) ! do not use for pol. target
       siborn = siborn*2.0*pi
-      Ed = cl_beam_energy
+      Ed = ebeamff
  	return
 	end
       

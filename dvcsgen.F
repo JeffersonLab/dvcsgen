@@ -1008,6 +1008,8 @@ C..     Generation of an event in GENDVCS
                     iproctype = ichannel
                     PhRAD(4) = egamma
             else
+                ebeamff = cl_beam_energy
+                Ed = ebeamff
                 CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
                     radweight = dstot
@@ -3129,7 +3131,7 @@ c
                PhRAD(1) = 0.
                PhRAD(2) = 0.
                PhRAD(3) = PhRAD(4)
-               Ed=cl_beam_energy-PhRAD(4)
+               Ed=Ed-PhRAD(4)
             endif
          endif
       endif
