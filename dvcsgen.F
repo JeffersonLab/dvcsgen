@@ -888,6 +888,7 @@ c
         real  beam_energy
         real*8 t1lim, t2lim
         real random_num
+        real nud, nud_shifted
 c
         beam_energy=cl_beam_energy
         LEN=8
@@ -980,12 +981,9 @@ c
         if(cl_dvcs) then
 C..     Generation of an event in GENDVCS 
             if (cl_radgen) then
-                    xff = xbd
-                    q2ff = Q2d
-                    tff = del2d
-                    phiff = pi-phigd
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
+                    if (isnan(bornweight).or.(bornweight.le.0).or.(bornweight.gt.huge(bornweight))) goto 10
                     ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
                     ! External radiative correction, following L. W. Mo and Y. S. Tsai. Rev. Mod. Phys. 41, 205–235, 1969.
                     ! Inverse transform sampling, dE = E0 * r ^ (1/bT), where the distribution is I(x) = bT*(x)^(bT-1), where 0<x=dE/E<1.
@@ -995,6 +993,13 @@ C..     Generation of an event in GENDVCS
                     !Al  x0 = 4.419 cm,  https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
                     Ed = ebeamff
                     ikeygene = 4
+                    nud = Q2d/(2D0*Mp*xbd)
+                    nud_shifted = nud - (cl_beam_energy - ebeamff)
+                    if (nud_shifted.le.0) goto 10 ! nu is the total energy change of beam to the scattered electron. The external energy loss can't exceed nu.
+                    q2ff = Q2d * ebeamff/cl_beam_energy ! Q2 = 2 * E_beam * E_sc * ( 1-cos theta). Taking into account that the E_beam is reduced is necessary for the correct cross section.
+                    xff = q2ff/(2D0*Mp*nud_shifted) ! Likewise, xB is shifted; nu -> nu - dE, xB = Q2/2/M/nu
+                    tff = del2d
+                    phiff = pi-phigd
                     CALL bhradgen(ebeamff, xff, q2ff, tff, phiff,cl_vv2cut,cl_delta,egamma,thetag,phig,ichannel,cl_pol,ikeygene,dstot)
                     if (isnan(dstot).or.(dstot.le.0).or.(dstot.gt.huge(dstot))) then
                      dstot = 0
@@ -3115,8 +3120,8 @@ c      if(Ed.ne.cl_beam_energy) print *,'dans getphoton : Ed=',Ed
 c      if((PhRAD(4).gt.0.).and.(ichannel.eq.2)) Ed=cl_beam_energy-PhRAD(4)
 ccc- Hyon-Suk
       yb = nu/Ed
-      Esc = Ed - nu
-      costel = 1D0 - Q2d/(2D0*Ed*Esc)
+      Esc = cl_beam_energy - nu
+      costel = 1D0 - Q2d/(2D0*cl_beam_energy*Esc)
       sintel = sqrt(1D0 - costel**2)
       cosphe=cos(phield)
       sinphe=sin(phield)
@@ -3139,7 +3144,7 @@ c
 c
       V3k1(1) = 0D0
       V3k1(2) = 0D0
-      V3k1(3) = Ed
+      V3k1(3) = Ed ! Use the effective beam energy after the energy loss.
 
       V3k2(1) = Esc*sintel*cosphe
       V3k2(2) = Esc*sintel*sinphe   !0D0
