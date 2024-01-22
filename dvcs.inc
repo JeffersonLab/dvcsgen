@@ -53,3 +53,5 @@ C..
         integer*4 ichannel, ikeygene
         real*8 egamma,thetag, phig
         real*8  ebeamff,xff,q2ff,tff,phiff
+        real randnum
+      common /clasdvcs10/ ebeamff,randnum

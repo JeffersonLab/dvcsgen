@@ -887,6 +887,8 @@ c
         logical outoflimits
         real  beam_energy
         real*8 t1lim, t2lim
+        real random_num
+        real nud, nud_shifted
 c
         beam_energy=cl_beam_energy
         LEN=8
@@ -959,7 +961,7 @@ C          yb=Q2d/(2D0*Mp*xbd*(cl_beam_energy-PhRAD(4)))
 C          w2=Mp*Mp+2.0*Mp*(cl_beam_energy-PhRAD(4))*yb-Q2d
 C         endif
 ccc- Hyon-Suk
-        if(yb.gt.cl_ymax.or.w2.lt.cl_wmin) then 
+        if(yb.gt.cl_ymax.or.w2.lt.cl_wmin.or.yb.lt.cl_ymin) then 
              goto 10
          endif
 c
@@ -973,18 +975,31 @@ c
         else
          helpi=0
         endif
+
+        randnum = random_num() ! common number used for vz
 c
         if(cl_dvcs) then
 C..     Generation of an event in GENDVCS 
             if (cl_radgen) then
-                    xff = xbd
-                    q2ff = Q2d
-                    tff = del2d
-                    phiff = pi-phigd
-                    ebeamff = cl_beam_energy
-                    ikeygene = 4
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
+                    if (isnan(bornweight).or.(bornweight.le.0).or.(bornweight.gt.huge(bornweight))) goto 10
+                    ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                    ! External radiative correction, following L. W. Mo and Y. S. Tsai. Rev. Mod. Phys. 41, 205–235, 1969.
+                    ! Inverse transform sampling, dE = E0 * r ^ (1/bT), where the distribution is I(x) = bT*(x)^(bT-1), where 0<x=dE/E<1.
+                    ! T is the material thickness in units of radiation length.
+                    ! For the rg-a target, there is 30 µm aluminum window + LH2 (depending on the vz).
+                    !LH2 x0 = 67.92 cm, https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
+                    !Al  x0 = 4.419 cm,  https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
+                    Ed = ebeamff
+                    ikeygene = 4
+                    nud = Q2d/(2D0*Mp*xbd)
+                    nud_shifted = nud - (cl_beam_energy - ebeamff)
+                    if (nud_shifted.le.0) goto 10 ! nu is the total energy change of beam to the scattered electron. The external energy loss can't exceed nu.
+                    q2ff = Q2d * ebeamff/cl_beam_energy ! Q2 = 2 * E_beam * E_sc * ( 1-cos theta). Taking into account that the E_beam is reduced is necessary for the correct cross section.
+                    xff = q2ff/(2D0*Mp*nud_shifted) ! Likewise, xB is shifted; nu -> nu - dE, xB = Q2/2/M/nu
+                    tff = del2d
+                    phiff = pi-phigd
                     CALL bhradgen(ebeamff, xff, q2ff, tff, phiff,cl_vv2cut,cl_delta,egamma,thetag,phig,ichannel,cl_pol,ikeygene,dstot)
                     if (isnan(dstot).or.(dstot.le.0).or.(dstot.gt.huge(dstot))) then
                      dstot = 0
@@ -998,6 +1013,8 @@ C..     Generation of an event in GENDVCS
                     iproctype = ichannel
                     PhRAD(4) = egamma
             else
+                ebeamff = cl_beam_energy
+                Ed = ebeamff
                 CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
                     radweight = dstot
@@ -1166,7 +1183,7 @@ c
 c
         integer jj,j,jl,k(4000,5)
         real gy,gw2,u,p(4000,5),rhelpi,rheli
-        real randnum,random_num
+        real random_num
         real PARL(2),plu(4),V(4)                   ! for LUND-compatibility
         data PARL/1.0,1.0/
         data plu/-1.0,1.0,0.0,0.0/
@@ -1207,11 +1224,11 @@ c
            gy=1.0-gelee/cl_beam_energy
            gw2=gw*gw
            u=heli+10*helpi
-            randnum=random_num()-0.5
+            !randnum=random_num()-0.5
  9         v(1)=(cl_rast*(random_num()-0.5)+cl_xpos)
            v(2)=(cl_rast*(random_num()-0.5)+cl_ypos)
       if(sqrt((v(1)-cl_xpos)**2+(v(2)-cl_ypos)**2).gt.cl_rast*0.5) goto 9 
-           v(3)=cl_zpos+randnum*cl_zwidth
+           v(3)=cl_zpos+(randnum-0.5)*cl_zwidth
           gelex=v(1)
           geley=v(2)
           gelez=v(3)
@@ -1245,7 +1262,7 @@ c101      FORMAT(2x,I10,2I6,2F11.2,I5,F10.3,2I5,2E14.7,2F6.2)
      6                                                   ,(V(jl),jl=1,3)
                  write (41,112) 2,radphi,1,(k(2,jl),jl=2,4),(P(2,jl),jl=1,3),radxb_true,radq2_true
      6                                                   ,(V(jl),jl=1,3)
-                 write (41,113) 3,plu(3),1,(k(3,jl),jl=2,4),(P(3,jl),jl=1,4),bornweight
+                 write (41,113) 3,ebeamff,1,(k(3,jl),jl=2,4),(P(3,jl),jl=1,4),bornweight
      6                                                   ,(V(jl),jl=1,3)
 
                  if (jj.eq.4.) then
@@ -1780,7 +1797,12 @@ c
       if( xb.le.xmin1 .or. xb.gt.xmax1 ) istatus=1           !    x  out of range
       if( del2.ge.del2min .or. del2.le.del2max ) istatus=2   ! delta out of range
       yb=nu/Ed
-      if(yb.gt.cl_ymax) istatus=3                               ! y<ymax
+      if( isnan(xb).or.isnan(Q2).or.isnan(del2).or.isnan(Phi_e).or.isnan(Phi_g)) istatus=3          ! y<ymax condition is redundant. if nan is passed from the radgen, skip the loop.
+      if (istatus.gt.0) then
+      dsigma = 0
+      return
+      endif
+
       call dvcsycol(del2,xb,Q2,ycol)
 
       Phi_gb=pi - Phi_g
@@ -3098,8 +3120,8 @@ c      if(Ed.ne.cl_beam_energy) print *,'dans getphoton : Ed=',Ed
 c      if((PhRAD(4).gt.0.).and.(ichannel.eq.2)) Ed=cl_beam_energy-PhRAD(4)
 ccc- Hyon-Suk
       yb = nu/Ed
-      Esc = Ed - nu
-      costel = 1D0 - Q2d/(2D0*Ed*Esc)
+      Esc = cl_beam_energy - nu
+      costel = 1D0 - Q2d/(2D0*cl_beam_energy*Esc)
       sintel = sqrt(1D0 - costel**2)
       cosphe=cos(phield)
       sinphe=sin(phield)
@@ -3114,7 +3136,7 @@ c
                PhRAD(1) = 0.
                PhRAD(2) = 0.
                PhRAD(3) = PhRAD(4)
-               Ed=cl_beam_energy-PhRAD(4)
+               Ed=Ed-PhRAD(4)
             endif
          endif
       endif
@@ -3122,7 +3144,7 @@ c
 c
       V3k1(1) = 0D0
       V3k1(2) = 0D0
-      V3k1(3) = Ed
+      V3k1(3) = Ed ! Use the effective beam energy after the energy loss.
 
       V3k2(1) = Esc*sintel*cosphe
       V3k2(2) = Esc*sintel*sinphe   !0D0
