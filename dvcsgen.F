@@ -875,7 +875,7 @@ C..
         common /xmax/  xmax,xmin,q2max,q2min,tmax,tmin 
      6                 ,nx,nq,nt,nfe,nfg
 C..     generate a DVCS event
-      double precision xbd,Q2d,del2d,phield,phigd,dstot,yb,w2
+      double precision xbd,Q2d,del2d,phield,phigd,dstot,yb,w2, costgg
 c
 c       radiative stuff
 c
@@ -1036,7 +1036,8 @@ c
           if(dstot.le.smax*VEC(6)) goto 10 ! use x-section
         endif
         if(cl_dvcs) then
-           call getphoton(xbd,Q2d,del2d,phield,phigd)
+           call getphoton(xbd,Q2d,del2d,phield,phigd,costgg)
+           if (costgg>1) goto 10
         else
            call getpi0(xbd,  Q2d, del2d,phield,phigd)
         endif
@@ -3090,7 +3091,7 @@ c
       return
       end
 c
-      subroutine getphoton(xbd,Q2d,del2d,phield,phigd)
+      subroutine getphoton(xbd,Q2d,del2d,phield,phigd,costgg)
 c
 C     set to 0 all moments
       implicit none
@@ -3170,6 +3171,8 @@ c
             endif
          else
             call V3subd( V3k1, V3k2, V3q)
+            nu = Ed-Esc
+            qmod =  sqrt(V3q(1)**2 + V3q(2)**2 + V3q(3)**2)
          endif
       else
             call V3subd( V3k1, V3k2, V3q)
