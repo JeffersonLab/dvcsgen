@@ -212,6 +212,7 @@ c
       cl_ktcor=.FALSE.
       cl_global=.FALSE.
       cl_radgen=.FALSE.
+      cl_radext=.FALSE.
       cl_radstable=.FALSE.
       cl_mod=0              ! write all, otherwise filter
       datfileOK=.TRUE.      ! write a data file
@@ -261,6 +262,8 @@ c
            cl_pol=2
         elseif(cnumber.eq.'--radgen') then
            cl_radgen=.TRUE.
+        elseif(cnumber.eq.'--radext') then
+           cl_radext=.TRUE.
         elseif(cnumber.eq.'--radstable') then
            cl_radstable=.TRUE.
         elseif(cnumber.eq.'--mom') then
@@ -613,6 +616,7 @@ c
         print *,'GPD model A,B,C,D:   ', cl_gpd 
         print *,'GPD sinphi scale:   ', cl_scale 
         print *,'BHRADGEN ON        :   ', cl_radgen 
+        print *,'External Radiative Correct ON        :   ', cl_radext 
         print *,'Use Born Cross sections when bhradgen on :   ', cl_radstable
         print *,'y_col cut        :   ', cl_ycol 
         print *,'acceptance       :   ',acceg1,acce16,acc12
@@ -875,7 +879,7 @@ C..
         common /xmax/  xmax,xmin,q2max,q2min,tmax,tmin 
      6                 ,nx,nq,nt,nfe,nfg
 C..     generate a DVCS event
-      double precision xbd,Q2d,del2d,phield,phigd,dstot,yb,w2
+      double precision xbd,Q2d,del2d,phield,phigd,dstot,yb,w2, costgg
 c
 c       radiative stuff
 c
@@ -894,6 +898,7 @@ c
         LEN=8
         ITRY=0
  10     CALL MYRANMAR(VEC,LEN)
+        Ed = cl_beam_energy
         ITRY=ITRY+1
         xbd=xmin+(xmax-xmin)*VEC(1)
         Q2d=q2min+(q2max-q2min)*VEC(2)
@@ -984,7 +989,11 @@ C..     Generation of an event in GENDVCS
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
                     if (isnan(bornweight).or.(bornweight.le.0).or.(bornweight.gt.huge(bornweight))) goto 10
-                    ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                    if (cl_radext) then
+                     ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                    else
+                     ebeamff = beam_energy 
+                    endif
                     ! External radiative correction, following L. W. Mo and Y. S. Tsai. Rev. Mod. Phys. 41, 205–235, 1969.
                     ! Inverse transform sampling, dE = E0 * r ^ (1/bT), where the distribution is I(x) = bT*(x)^(bT-1), where 0<x=dE/E<1.
                     ! T is the material thickness in units of radiation length.
@@ -1035,7 +1044,8 @@ c
           if(dstot.le.smax*VEC(6)) goto 10 ! use x-section
         endif
         if(cl_dvcs) then
-           call getphoton(xbd,Q2d,del2d,phield,phigd)
+           call getphoton(xbd,Q2d,del2d,phield,phigd,costgg)
+           if (costgg>1) goto 10
         else
            call getpi0(xbd,  Q2d, del2d,phield,phigd)
         endif
@@ -3089,7 +3099,7 @@ c
       return
       end
 c
-      subroutine getphoton(xbd,Q2d,del2d,phield,phigd)
+      subroutine getphoton(xbd,Q2d,del2d,phield,phigd,costgg)
 c
 C     set to 0 all moments
       implicit none
@@ -3169,6 +3179,8 @@ c
             endif
          else
             call V3subd( V3k1, V3k2, V3q)
+            nu = Ed-Esc
+            qmod =  sqrt(V3q(1)**2 + V3q(2)**2 + V3q(3)**2)
          endif
       else
             call V3subd( V3k1, V3k2, V3q)
