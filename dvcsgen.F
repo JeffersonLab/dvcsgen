@@ -894,6 +894,7 @@ c
         LEN=8
         ITRY=0
  10     CALL MYRANMAR(VEC,LEN)
+        Ed = cl_beam_energy
         ITRY=ITRY+1
         xbd=xmin+(xmax-xmin)*VEC(1)
         Q2d=q2min+(q2max-q2min)*VEC(2)
