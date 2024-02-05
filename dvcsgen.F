@@ -212,6 +212,7 @@ c
       cl_ktcor=.FALSE.
       cl_global=.FALSE.
       cl_radgen=.FALSE.
+      cl_radext=.FALSE.
       cl_radstable=.FALSE.
       cl_mod=0              ! write all, otherwise filter
       datfileOK=.TRUE.      ! write a data file
@@ -261,6 +262,8 @@ c
            cl_pol=2
         elseif(cnumber.eq.'--radgen') then
            cl_radgen=.TRUE.
+        elseif(cnumber.eq.'--radext') then
+           cl_radext=.TRUE.
         elseif(cnumber.eq.'--radstable') then
            cl_radstable=.TRUE.
         elseif(cnumber.eq.'--mom') then
@@ -613,6 +616,7 @@ c
         print *,'GPD model A,B,C,D:   ', cl_gpd 
         print *,'GPD sinphi scale:   ', cl_scale 
         print *,'BHRADGEN ON        :   ', cl_radgen 
+        print *,'External Radiative Correct ON        :   ', cl_radext 
         print *,'Use Born Cross sections when bhradgen on :   ', cl_radstable
         print *,'y_col cut        :   ', cl_ycol 
         print *,'acceptance       :   ',acceg1,acce16,acc12
@@ -985,7 +989,11 @@ C..     Generation of an event in GENDVCS
                     CALL bmkxsec(xbd, Q2d, del2d, phield,phigd,dstot)
                     bornweight = dstot
                     if (isnan(bornweight).or.(bornweight.le.0).or.(bornweight.gt.huge(bornweight))) goto 10
-                    ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                    if (cl_radext) then
+                     ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                    else
+                     ebeamff = beam_energy 
+                    endif
                     ! External radiative correction, following L. W. Mo and Y. S. Tsai. Rev. Mod. Phys. 41, 205–235, 1969.
                     ! Inverse transform sampling, dE = E0 * r ^ (1/bT), where the distribution is I(x) = bT*(x)^(bT-1), where 0<x=dE/E<1.
                     ! T is the material thickness in units of radiation length.
