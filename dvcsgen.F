@@ -990,7 +990,7 @@ C..     Generation of an event in GENDVCS
                     bornweight = dstot
                     if (isnan(bornweight).or.(bornweight.le.0).or.(bornweight.gt.huge(bornweight))) goto 10
                     if (cl_radext) then
-                     ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/67.92 + 0.003/4.419))
+                     ebeamff = beam_energy - beam_energy * random_num()**(3./4./ (randnum*cl_zwidth/929.0 + 0.003/4.419))
                     else
                      ebeamff = beam_energy 
                     endif
@@ -998,7 +998,7 @@ C..     Generation of an event in GENDVCS
                     ! Inverse transform sampling, dE = E0 * r ^ (1/bT), where the distribution is I(x) = bT*(x)^(bT-1), where 0<x=dE/E<1.
                     ! T is the material thickness in units of radiation length.
                     ! For the rg-a target, there is 30 µm aluminum window + LH2 (depending on the vz).
-                    !LH2 x0 = 67.92 cm, https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
+                    !LH2 x0 = 929 cm, https://pdg.lbl.gov/2017/AtomicNuclearProperties/HTML/liquid_hydrogen.html
                     !Al  x0 = 4.419 cm,  https://pdg.lbl.gov/2022/AtomicNuclearProperties/HTML/aluminum_Al.html
                     Ed = ebeamff
                     ikeygene = 4
