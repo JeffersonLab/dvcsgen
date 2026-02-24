@@ -7,16 +7,29 @@ cd dvcsgen
 make
 ```
 
-Please cite the following articles for this generator.
+Please cite this generator for publication.
 ```
-V. A. Korotkov and W. D. Nowak, Eur. Phys. J. C 23, 455–
-461 (2002).
+H. Avakian, The dvcsgen generator, available at https://github.com/JeffersonLab/dvcsgen
+```
+
+`--gpd 101` option uses CFF grid (VGG model with D-term) created by G. Gavalian. The following article is related.
+```
+G. Gavalian et al. (CLAS), Phys. Rev. C 80, 035206 (2009).
+```
+
+If `--gpd` options used GPD model 1—4, please cite this article.
+```
+V. A. Korotkov and W. D. Nowak, Eur. Phys. J. C 23, 455–461 (2002).
+```
+
+If radiative correction is used, please cite this article.
+```
 I. Akushevich and A. Ilyichev, Phys. Rev. D 98, 013005 (2018).
 ```
 
 The supplementary material of the following article contains the global fitting of the EM form factors.
 ```
-Z. Ye, J. R. Arrington, R. J.Hill and G. Lee, Phys. Lett. B 777 (2018) 8–15
+Z. Ye, J. R. Arrington, R. J.Hill and G. Lee, Phys. Lett. B 777 (2018) 8–15.
 ```
 
 To get command line options `./dvcsgen --help`
